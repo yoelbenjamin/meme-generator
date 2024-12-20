@@ -1,25 +1,38 @@
-import { useState } from "react"
+import { use } from "react"
+import { useState, useEffect } from "react"
 
 export default function Main() {
 
 
   const [meme, setMeme] = useState({
-    imgURL:'https://imgflip.com/s/meme/One-Does-Not-Simply.jpg',
-    topText: 'Top Text',
-    bottomText: 'Bottom Text'
+    imgUrl:"https://imgflip.com/s/meme/One-Does-Not-Simply.jpg",
+    topText: 'One does not simply',
+    bottomText: 'Walk into Mordor'
   })
 
-  function handleTopTextChange(event) {
-    setMeme(event.target.value)
+  const [memeData, setMemeData] = useState([])
+
+  function handleTextChange(event) {
+    const {value, name} = event.target
+    setMeme( prevMeme => ({
+      ...prevMeme, 
+      [name]: value
+    }))
   }
 
-  function handleBottomTextChange(event) {
-    setMeme(event.target.value)
-  }
+  useEffect(() => {
+    fetch ("https://api.imgflip.com/get_memes")
+      .then (response => response.json())
+      .then (data => setMemeData(data.data.memes))
+    }, [])
 
   function generateMeme() {
-    const randomNum = Math.floor(Math.random() * 100)
-    const randomMeme = `https://imgflip`
+    const randomNum = Math.floor(Math.random() * memeData.length)
+    const newMemeUrl = memeData[randomNum].url
+    setMeme( prevMeme => ({
+      ...prevMeme,
+      imgUrl: newMemeUrl
+    }))
   }
 
   return (
@@ -27,24 +40,26 @@ export default function Main() {
       <form className="form-input-styling">
         <label className="label-styling" htmlFor="top-text">Top Text
         <input
-          onChange={handleTopTextChange}
+          onChange={handleTextChange}
+          value = {meme.topText}
           className="input-field-styling"
           type="text"
-          name="top-text"
+          name="topText"
           placeholder="Top Text" />
         </label>
         <label className="label-styling" htmlFor="bottom-text">Bottom Text
         <input 
-          onChange={handleBottomTextChange} 
+          onChange={handleTextChange} 
+          value = {meme.bottomText}
           className="input-field-styling"
           type="text" 
-          name="bottom-text"
+          name="bottomText"
           placeholder="Bottom Text" />
         </label>
       </form>
 
       <div className="meme-styling">
-      <img className="meme-image-styling" src={meme.imgURL} alt="meme" />
+      <img className="meme-image-styling" src={meme.imgUrl} alt="meme" />
       <span className="top-text-styling">{meme.topText}</span>
       <span className="bottom-text-styling">{meme.bottomText}</span>
       </div>
